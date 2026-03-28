@@ -1,0 +1,14 @@
+# Default owner (everything)
+* @thebollywoodguy
+
+# Frontend files
+#/frontend/ @frontend-team
+
+# Backend files
+#/backend/ @backend-team
+
+# Specific file
+#package.json @devops-team
+
+# Multiple owners
+#/src/ @user1 @user2
