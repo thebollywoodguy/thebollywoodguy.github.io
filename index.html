@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inside GitHub Copilot — Architecture &amp; Inner Workings</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ========== NAVBAR ========== -->
+  <nav class="navbar" aria-label="Main navigation">
+    <div class="nav-container">
+      <a href="#hero" class="nav-logo">
+        <span class="logo-icon">⚡</span>
+        Copilot Architecture
+      </a>
+      <button class="theme-toggle" aria-label="Toggle light/dark mode" title="Toggle theme">
+        <span class="theme-icon">☀️</span>
+      </button>
+      <button class="nav-toggle" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-links">
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#flow">Flow</a></li>
+        <li><a href="#deepdive">Deep Dive</a></li>
+        <li><a href="#security">Security</a></li>
+        <li><a href="#simulation">Simulation</a></li>
+        <li><a href="#timeline">Timeline</a></li>
+        <li><a href="#conclusion">Conclusion</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- ========== HERO ========== -->
+  <section class="hero" id="hero">
+    <div class="hero-badge">
+      <span class="dot"></span> Architecture Deep-Dive
+    </div>
+    <h1>Inside <span class="gradient-text">GitHub Copilot</span></h1>
+    <p class="hero-description">
+      Explore the architecture, request lifecycle, and AI engine behind the world's most widely adopted AI pair programmer.
+    </p>
+    <div class="hero-cta">
+      <button class="btn-primary" onclick="document.getElementById('architecture').scrollIntoView({behavior:'smooth'})">
+        Explore Architecture
+      </button>
+      <button class="btn-secondary" onclick="document.getElementById('simulation').scrollIntoView({behavior:'smooth'})">
+        Run Simulation
+      </button>
+    </div>
+  </section>
+
+  <!-- ========== OVERVIEW ========== -->
+  <section id="overview">
+    <span class="section-label">Overview</span>
+    <h2 class="section-title fade-in">What Is GitHub Copilot?</h2>
+    <p class="section-subtitle fade-in">
+      GitHub Copilot is an AI-powered coding assistant that suggests code completions, entire functions, tests, and documentation in real time — directly inside your editor.
+    </p>
+
+    <div class="overview-grid">
+      <article class="glass-card overview-card fade-in">
+        <div class="card-icon blue">🧠</div>
+        <h3>AI-Powered Suggestions</h3>
+        <p>Backed by large language models trained on public code, Copilot generates context-aware code completions as you type.</p>
+      </article>
+      <article class="glass-card overview-card fade-in">
+        <div class="card-icon purple">🔌</div>
+        <h3>Editor Integration</h3>
+        <p>Runs as a native extension in VS Code, JetBrains, Neovim, and more — surfacing suggestions inline with zero context switching.</p>
+      </article>
+      <article class="glass-card overview-card fade-in">
+        <div class="card-icon green">💬</div>
+        <h3>Chat &amp; Inline Modes</h3>
+        <p>Beyond inline ghost text, Copilot Chat lets you ask questions, generate tests, and refactor code through a conversational interface.</p>
+      </article>
+      <article class="glass-card overview-card fade-in">
+        <div class="card-icon orange">🔐</div>
+        <h3>Enterprise Ready</h3>
+        <p>Offers admin controls, policy management, content exclusions, and audit logs for organizations with strict compliance requirements.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ========== ARCHITECTURE DIAGRAM ========== -->
+  <section id="architecture">
+    <span class="section-label">Architecture</span>
+    <h2 class="section-title fade-in">System Architecture</h2>
+    <p class="section-subtitle fade-in">
+      End-to-end data flow from keystroke to suggestion — every component in the chain.
+    </p>
+
+    <div class="arch-flow fade-in">
+      <!-- Row of nodes with connecting arrows -->
+      <div class="arch-flow-row">
+        <div class="arch-card" data-step="1">
+          <div class="arch-card-icon node-vscode">💻</div>
+          <div class="arch-card-body">
+            <h4>VS Code</h4>
+            <p>Developer writes code in the editor. Cursor context and file metadata are captured.</p>
+          </div>
+          <span class="arch-step-num">1</span>
+        </div>
+
+        <div class="arch-connector"><div class="arch-connector-line"></div><span class="arch-connector-arrow">›</span></div>
+
+        <div class="arch-card" data-step="2">
+          <div class="arch-card-icon node-extension">🧩</div>
+          <div class="arch-card-body">
+            <h4>Copilot Extension</h4>
+            <p>Gathers current file, open tabs, cursor position, and language ID to build the prompt.</p>
+          </div>
+          <span class="arch-step-num">2</span>
+        </div>
+
+        <div class="arch-connector"><div class="arch-connector-line"></div><span class="arch-connector-arrow">›</span></div>
+
+        <div class="arch-card" data-step="3">
+          <div class="arch-card-icon node-api">☁️</div>
+          <div class="arch-card-body">
+            <h4>GitHub API</h4>
+            <p>Authenticates the user, enforces policies, and routes the prompt to the model backend.</p>
+          </div>
+          <span class="arch-step-num">3</span>
+        </div>
+      </div>
+
+      <!-- Return arrow row -->
+      <div class="arch-flow-bend">
+        <div class="arch-bend-line"></div>
+      </div>
+
+      <div class="arch-flow-row reverse">
+        <div class="arch-card" data-step="6">
+          <div class="arch-card-icon node-editor">✏️</div>
+          <div class="arch-card-body">
+            <h4>Editor Display</h4>
+            <p>Ghost text appears inline at the cursor. Accept with Tab, dismiss with Esc.</p>
+          </div>
+          <span class="arch-step-num">6</span>
+        </div>
+
+        <div class="arch-connector reverse"><span class="arch-connector-arrow">‹</span><div class="arch-connector-line"></div></div>
+
+        <div class="arch-card" data-step="5">
+          <div class="arch-card-icon node-response">📡</div>
+          <div class="arch-card-body">
+            <h4>Streaming Response</h4>
+            <p>Tokens streamed back over HTTPS as generated for low-latency display.</p>
+          </div>
+          <span class="arch-step-num">5</span>
+        </div>
+
+        <div class="arch-connector reverse"><span class="arch-connector-arrow">‹</span><div class="arch-connector-line"></div></div>
+
+        <div class="arch-card" data-step="4">
+          <div class="arch-card-icon node-llm">🤖</div>
+          <div class="arch-card-body">
+            <h4>Large Language Model</h4>
+            <p>Tokenizes the prompt, runs transformer inference, and produces completion tokens.</p>
+          </div>
+          <span class="arch-step-num">4</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== STEP-BY-STEP FLOW ========== -->
+  <section id="flow">
+    <span class="section-label">Request Lifecycle</span>
+    <h2 class="section-title fade-in">What Happens When You Invoke Copilot</h2>
+    <p class="section-subtitle fade-in">
+      A step-by-step walkthrough of the journey from keystroke to code suggestion.
+    </p>
+
+    <div class="steps-container">
+      <div class="step-item">
+        <div class="step-dot">1</div>
+        <div class="step-content">
+          <h3>User Types Code</h3>
+          <p>The developer writes or edits code in their editor. After a brief debounce pause, the Copilot extension activates and begins assembling context.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-dot">2</div>
+        <div class="step-content">
+          <h3>Context Gathering</h3>
+          <p>The extension collects the current file contents, cursor position, language identifier, open neighboring tabs, and relevant import statements to build a rich prompt.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-dot">3</div>
+        <div class="step-content">
+          <h3>Prompt Construction</h3>
+          <p>Context is serialized into a prompt with prefix (code before cursor) and suffix (code after cursor). Token budgets are respected so the prompt fits the model's context window.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-dot">4</div>
+        <div class="step-content">
+          <h3>API Request</h3>
+          <p>The prompt is sent over an encrypted HTTPS connection to the GitHub Copilot backend, which authenticates the user, checks entitlements, and forwards the request to the model.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-dot">5</div>
+        <div class="step-content">
+          <h3>Model Inference</h3>
+          <p>The LLM tokenizes the input, runs transformer attention layers, and samples output tokens autoregressively. Multiple candidate completions may be generated.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-dot">6</div>
+        <div class="step-content">
+          <h3>Streaming &amp; Display</h3>
+          <p>Tokens are streamed back to the extension in real time. The extension renders them as translucent "ghost text" inline at the cursor, ready to be accepted with Tab.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== DEEP DIVE ========== -->
+  <section id="deepdive">
+    <span class="section-label">Deep Dive</span>
+    <h2 class="section-title fade-in">How Copilot Generates Suggestions</h2>
+    <p class="section-subtitle fade-in">
+      A closer look at context assembly, tokenization, prompt engineering, and streaming.
+    </p>
+
+    <div class="deepdive-grid">
+      <article class="glass-card deepdive-card fade-in">
+        <h3>📋 Context Assembly</h3>
+        <p>The extension gathers:</p>
+        <ul>
+          <li>Current file content (prefix + suffix around cursor)</li>
+          <li>Language ID and file path</li>
+          <li>Open editor tabs ranked by relevance</li>
+          <li>Import / require statements for dependency hints</li>
+          <li>Neighboring file snippets (for cross-file context)</li>
+        </ul>
+      </article>
+      <article class="glass-card deepdive-card fade-in">
+        <h3>🔤 Tokenization &amp; Prompt</h3>
+        <p>Gathered text is tokenized using BPE (Byte-Pair Encoding). The prompt is trimmed to fit the model's context window (e.g., 8 K–32 K tokens). A &lt;fim_prefix&gt; / &lt;fim_suffix&gt; / &lt;fim_middle&gt; format is used for fill-in-the-middle completion.</p>
+      </article>
+      <article class="glass-card deepdive-card fade-in">
+        <h3>⚙️ Model Inference</h3>
+        <p>The transformer model performs multi-head self-attention over the prompt tokens, then generates output tokens one at a time using nucleus (top-p) sampling. Temperature and repetition penalties fine-tune output quality.</p>
+      </article>
+      <article class="glass-card deepdive-card fade-in">
+        <h3>📡 Streaming Response</h3>
+        <p>Instead of waiting for the full completion, tokens are streamed via Server-Sent Events (SSE). The extension decodes each chunk and extends the ghost text overlay, giving the developer near-instant feedback.</p>
+      </article>
+    </div>
+
+    <!-- Code Snippet: Example Input / Output -->
+    <div class="code-block fade-in">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <span class="code-lang">example-prompt.py</span>
+      </div>
+      <div class="code-body">
+<span class="comment"># What Copilot sees (simplified prompt)</span>
+<span class="comment"># &lt;fim_prefix&gt;</span>
+<span class="keyword">def</span> <span class="function">calculate_fibonacci</span>(<span class="variable">n</span>: <span class="type">int</span>) -> <span class="type">list</span>[<span class="type">int</span>]:
+    <span class="string">"""Return the first n Fibonacci numbers."""</span>
+<span class="comment"># &lt;fim_suffix&gt;</span>
+<span class="comment"># &lt;fim_middle&gt;</span>
+
+<span class="comment"># ── Copilot's generated suggestion ──</span>
+    <span class="variable">fibs</span> = [<span class="type">0</span>, <span class="type">1</span>]
+    <span class="keyword">for</span> <span class="variable">_</span> <span class="keyword">in</span> <span class="function">range</span>(<span class="type">2</span>, <span class="variable">n</span>):
+        <span class="variable">fibs</span>.<span class="function">append</span>(<span class="variable">fibs</span>[-<span class="type">1</span>] + <span class="variable">fibs</span>[-<span class="type">2</span>])
+    <span class="keyword">return</span> <span class="variable">fibs</span>[:<span class="variable">n</span>]
+      </div>
+    </div>
+
+    <!-- Inline vs Chat Comparison -->
+    <h3 class="section-title fade-in" style="font-size:1.5rem; margin-top:3rem;">Inline Suggestions vs. Copilot Chat</h3>
+    <div class="comparison-grid" style="margin-top:1.5rem;">
+      <article class="glass-card comparison-card fade-in">
+        <h3>✨ Inline Suggestions</h3>
+        <ul class="feature-list">
+          <li><span class="check">✓</span> Appears as ghost text at the cursor</li>
+          <li><span class="check">✓</span> Triggered automatically on pause</li>
+          <li><span class="check">✓</span> Accept with Tab, dismiss with Esc</li>
+          <li><span class="check">✓</span> Multi-line &amp; single-line completions</li>
+          <li><span class="check">✓</span> Uses fill-in-the-middle (FIM) prompting</li>
+          <li><span class="check">✓</span> Optimized for low latency (~200-500 ms)</li>
+        </ul>
+      </article>
+      <article class="glass-card comparison-card chat fade-in">
+        <h3>💬 Copilot Chat</h3>
+        <ul class="feature-list">
+          <li><span class="check">✓</span> Conversational UI in sidebar / inline</li>
+          <li><span class="check">✓</span> Explain, refactor, generate tests, fix errors</li>
+          <li><span class="check">✓</span> Multi-turn context with message history</li>
+          <li><span class="check">✓</span> Slash commands (/explain, /tests, /fix)</li>
+          <li><span class="check">✓</span> References open files and selections</li>
+          <li><span class="check">✓</span> Higher token budget for complex tasks</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- ========== SECURITY ========== -->
+  <section id="security">
+    <span class="section-label">Security &amp; Privacy</span>
+    <h2 class="section-title fade-in">Security &amp; Privacy Considerations</h2>
+    <p class="section-subtitle fade-in">
+      How GitHub Copilot protects your code, data, and intellectual property.
+    </p>
+
+    <div class="security-grid">
+      <article class="glass-card security-card fade-in">
+        <h3>🔒 Data Encryption</h3>
+        <p>All prompts and suggestions are transmitted over TLS-encrypted connections. Data is not stored on GitHub servers after a suggestion is returned.</p>
+      </article>
+      <article class="glass-card security-card fade-in">
+        <h3>🚫 No Training on Private Code</h3>
+        <p>For Copilot Business and Enterprise, your code is never used to train or improve models. Prompts and suggestions are discarded after delivery.</p>
+      </article>
+      <article class="glass-card security-card fade-in">
+        <h3>📜 Content Exclusions</h3>
+        <p>Admins can define repository and path-level content exclusions to prevent specific files from being sent to the Copilot backend.</p>
+      </article>
+      <article class="glass-card security-card fade-in">
+        <h3>🛡️ Duplicate Detection</h3>
+        <p>An optional filter blocks suggestions that match public code verbatim, helping teams avoid unintentional license compliance issues.</p>
+      </article>
+      <article class="glass-card security-card fade-in">
+        <h3>📊 Audit Logs</h3>
+        <p>Enterprise organizations get audit log events for Copilot usage — tracking who used Copilot, when, and in which repository.</p>
+      </article>
+      <article class="glass-card security-card fade-in">
+        <h3>🔑 Access Controls</h3>
+        <p>Organization owners control Copilot seat assignments, enforce policies, and manage which teams and repositories have access.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ========== SIMULATION ========== -->
+  <section id="simulation">
+    <span class="section-label">Interactive</span>
+    <h2 class="section-title fade-in">Simulate a Copilot Request</h2>
+    <p class="section-subtitle fade-in">
+      Watch the request lifecycle play out step by step — from typing code to receiving a suggestion.
+    </p>
+
+    <div class="simulation-container fade-in">
+      <div class="sim-trigger">
+        <button id="sim-btn" class="btn-primary">Simulate Copilot Request</button>
+      </div>
+
+      <div class="sim-display">
+        <!-- Simulated editor -->
+        <div class="sim-editor">
+          <div class="sim-line"><span class="keyword">def</span> <span class="function">merge_sorted_lists</span>(<span class="variable">a</span>, <span class="variable">b</span>):</div>
+          <div class="sim-line">    <span class="string">"""Merge two sorted lists into one sorted list."""</span></div>
+          <div class="sim-line">    <span class="variable">result</span> = []<span class="sim-cursor"></span></div>
+        </div>
+
+        <!-- Status bar -->
+        <div class="sim-status-bar">
+          <div class="sim-status-steps">
+            <div class="sim-status-step">
+              <div class="sim-step-dot"></div>
+              <span>Typing</span>
+            </div>
+            <div class="sim-status-step">
+              <div class="sim-step-dot"></div>
+              <span>Sending</span>
+            </div>
+            <div class="sim-status-step">
+              <div class="sim-step-dot"></div>
+              <span>Processing</span>
+            </div>
+            <div class="sim-status-step">
+              <div class="sim-step-dot"></div>
+              <span>Suggestion</span>
+            </div>
+          </div>
+          <span class="code-lang">Python</span>
+        </div>
+
+        <!-- Suggestion area -->
+        <div class="sim-suggestion-area">
+          <div class="sim-suggestion">
+            <div class="ghost-text">
+    <span class="variable">i</span>, <span class="variable">j</span> = <span class="type">0</span>, <span class="type">0</span><br />
+    <span class="keyword">while</span> <span class="variable">i</span> &lt; <span class="function">len</span>(<span class="variable">a</span>) <span class="keyword">and</span> <span class="variable">j</span> &lt; <span class="function">len</span>(<span class="variable">b</span>):<br />
+        <span class="keyword">if</span> <span class="variable">a</span>[<span class="variable">i</span>] &lt;= <span class="variable">b</span>[<span class="variable">j</span>]:<br />
+            <span class="variable">result</span>.<span class="function">append</span>(<span class="variable">a</span>[<span class="variable">i</span>])<br />
+            <span class="variable">i</span> += <span class="type">1</span><br />
+        <span class="keyword">else</span>:<br />
+            <span class="variable">result</span>.<span class="function">append</span>(<span class="variable">b</span>[<span class="variable">j</span>])<br />
+            <span class="variable">j</span> += <span class="type">1</span><br />
+    <span class="keyword">return</span> <span class="variable">result</span> + <span class="variable">a</span>[<span class="variable">i</span>:] + <span class="variable">b</span>[<span class="variable">j</span>:]
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== TIMELINE ========== -->
+  <section id="timeline">
+    <span class="section-label">Lifecycle</span>
+    <h2 class="section-title fade-in">Request Lifecycle Timeline</h2>
+    <p class="section-subtitle fade-in">
+      Approximate timing breakdown of a typical Copilot inline suggestion cycle.
+    </p>
+
+    <div class="timeline-wrapper fade-in">
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div>
+            <div class="timeline-time">0 ms</div>
+            <div class="timeline-label">Keystroke</div>
+            <div class="timeline-desc">User pauses typing</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div>
+            <div class="timeline-time">~75 ms</div>
+            <div class="timeline-label">Debounce</div>
+            <div class="timeline-desc">Extension waits for idle</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div>
+            <div class="timeline-time">~100 ms</div>
+            <div class="timeline-label">Context Build</div>
+            <div class="timeline-desc">Prompt assembled &amp; tokenized</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div>
+            <div class="timeline-time">~120 ms</div>
+            <div class="timeline-label">Network</div>
+            <div class="timeline-desc">HTTPS request to API</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div>
+            <div class="timeline-time">~200–400 ms</div>
+            <div class="timeline-label">Inference</div>
+            <div class="timeline-desc">Model generates tokens</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div>
+            <div class="timeline-time">~350–500 ms</div>
+            <div class="timeline-label">Display</div>
+            <div class="timeline-desc">Ghost text rendered</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== CONCLUSION ========== -->
+  <section id="conclusion" class="conclusion">
+    <span class="section-label">Summary</span>
+    <h2 class="section-title fade-in">Conclusion</h2>
+    <p class="conclusion-text fade-in">
+      GitHub Copilot orchestrates a sophisticated pipeline — from local context extraction in your editor, through authenticated API gateways, to large-scale transformer inference — all within a few hundred milliseconds. Understanding this architecture empowers developers and architects to make informed decisions about adoption, security, and workflow integration.
+    </p>
+    <div class="fade-in">
+      <button class="btn-primary" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+        Back to Top ↑
+      </button>
+    </div>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
